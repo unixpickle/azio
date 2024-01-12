@@ -56,3 +56,17 @@ func GetBlobConcurrency(ctx context.Context) BlobConcurrency {
 		return DefaultBlobConcurrency()
 	}
 }
+
+// CopyContextConfig copies the configuration from src into a new context based
+// on dst.
+func CopyContextConfig(dst, src context.Context) context.Context {
+	return context.WithValue(
+		context.WithValue(
+			dst,
+			ContextKeyBlobConcurrency,
+			GetBlobConcurrency(src),
+		),
+		ContextKeyClientStore,
+		GetClientStore(src),
+	)
+}
