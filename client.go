@@ -42,8 +42,8 @@ func NewClientStore(options azblob.ClientOptions) *ClientStore {
 	}
 }
 
-// GetClient creates or reuses a client for the Azure storage account.
-func (c *ClientStore) GetClient(account string) (*azblob.Client, error) {
+// Client creates or reuses a client for the Azure storage account.
+func (c *ClientStore) Client(account string) (*azblob.Client, error) {
 	c.lock.RLock()
 	if match, ok := c.clients[account]; ok {
 		return match, nil
