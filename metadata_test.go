@@ -1,10 +1,7 @@
 package azio
 
 import (
-	"context"
 	"testing"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 )
 
 func TestStat(t *testing.T) {
@@ -12,11 +9,7 @@ func TestStat(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var options azblob.ClientOptions
-	options.Retry.MaxRetries = 1
-	store := NewClientStore(options)
-	ctx := context.WithValue(context.Background(), ContextKeyClientStore, store)
-
+	ctx := testingContext()
 	stats, err := Stat(ctx, path)
 	if err != nil {
 		t.Fatal(err)
