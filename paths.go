@@ -59,3 +59,19 @@ func (b *BlobPath) Base() string {
 		return path.Base(b.Path)
 	}
 }
+
+func (b *BlobPath) Join(subPath string) *BlobPath {
+	if b.Path == "" {
+		return &BlobPath{
+			Account:   b.Account,
+			Container: b.Container,
+			Path:      subPath,
+		}
+	} else {
+		return &BlobPath{
+			Account:   b.Account,
+			Container: b.Container,
+			Path:      path.Join(b.Path, subPath),
+		}
+	}
+}
