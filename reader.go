@@ -79,6 +79,24 @@ func OpenBlob(
 	p *BlobPath,
 	bufSize int,
 ) (io.ReadSeeker, error) {
+	f, err := BlobOpener(ctx, p, bufSize)
+	if err != nil {
+		return nil, err
+	}
+	return f(ctx), nil
+}
+
+// BlobOpener is like OpenBlob(), but returns a function that can be used to
+// create an arbitrary number of readers without performing any additional I/O
+// each time a reader is created.
+//
+// This can be useful when multiple Goroutines need to read from the same file,
+// where using a single io.ReadSeeker would not be appropriate.
+func BlobOpener(
+	ctx context.Context,
+	p *BlobPath,
+	bufSize int,
+) (func(ctx context.Context) io.ReadSeeker, error) {
 	client, err := p.Client(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("open blob %s: %w", p, err)
@@ -87,13 +105,15 @@ func OpenBlob(
 	if err != nil {
 		return nil, fmt.Errorf("open blob %s: %w", p, err)
 	}
-	return &bufferedSeekableBlobReader{
-		ctx:     ctx,
-		client:  client,
-		path:    p,
-		offset:  0,
-		size:    info.Size(),
-		bufSize: bufSize,
+	return func(ctx context.Context) io.ReadSeeker {
+		return &bufferedSeekableBlobReader{
+			ctx:     ctx,
+			client:  client,
+			path:    p,
+			offset:  0,
+			size:    info.Size(),
+			bufSize: bufSize,
+		}
 	}, nil
 }
 
