@@ -79,11 +79,11 @@ func OpenBlob(
 	p *BlobPath,
 	bufSize int,
 ) (io.ReadSeeker, error) {
-	f, err := BlobOpener(ctx, p, bufSize)
+	f, err := BlobOpener(ctx, p)
 	if err != nil {
 		return nil, err
 	}
-	return f(ctx), nil
+	return f(ctx, bufSize), nil
 }
 
 // BlobOpener is like OpenBlob(), but returns a function that can be used to
@@ -95,8 +95,7 @@ func OpenBlob(
 func BlobOpener(
 	ctx context.Context,
 	p *BlobPath,
-	bufSize int,
-) (func(ctx context.Context) io.ReadSeeker, error) {
+) (func(ctx context.Context, bufSize int) io.ReadSeeker, error) {
 	client, err := p.Client(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("open blob %s: %w", p, err)
@@ -105,7 +104,7 @@ func BlobOpener(
 	if err != nil {
 		return nil, fmt.Errorf("open blob %s: %w", p, err)
 	}
-	return func(ctx context.Context) io.ReadSeeker {
+	return func(ctx context.Context, bufSize int) io.ReadSeeker {
 		return &bufferedSeekableBlobReader{
 			ctx:     ctx,
 			client:  client,
